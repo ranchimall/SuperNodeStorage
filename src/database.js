@@ -531,7 +531,7 @@ DB.clearUnauthorisedAppData = function (snID, authorisedAppList, timestamp) {
     return new Promise((resolve, reject) => {
         let statement = "DELETE FROM _" + snID +
             " WHERE " + H_struct.TIME + " < ? AND " + //data before deleteDelay (ie, 7 days ago)
-            H_struct.APPLICATION + " NOT IN (?)" //app not authorised
+            H_struct.APPLICATION + " NOT IN (?) "; //app not authorised
 
         queryResolve(statement, [timestamp, authorisedAppList])
             .then(result => resolve(result))
