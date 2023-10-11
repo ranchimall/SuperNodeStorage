@@ -508,20 +508,20 @@ DB.deleteData = function (snID, vectorClock) {
 };
 
 /* Data clearing */
-
+//Fixed the earlier error
 DB.clearAuthorisedAppData = function (snID, app, adminID, subAdmins, timestamp) {
     return new Promise((resolve, reject) => {
-        let statement = "DELETE FROM _" + snID +
-            " WHERE ( " +
-            H_struct.TIME + " < ? AND " + //data before deleteDelay (ie, 7 days ago)
-            H_struct.APPLICATION + " = ? AND " + //data of this app
-            T_struct.TAG + " IS NULL " +   //tag field is NULL
-            ") AND ( " +
-            H_struct.RECEIVER_ID + " != ? OR " + //receiver is not admin
-            H_struct.SENDER_ID + " NOT IN (?) " +  //sender is not subAdmin
-            ")";
+        let statement = `DELETE FROM _${snID} 
+            WHERE 
+                ${H_struct.TIME} < ? 
+                AND ${H_struct.APPLICATION} = ? 
+                AND ${T_struct.TAG} IS NULL 
+                AND (
+                    ${H_struct.RECEIVER_ID} != ? 
+                    OR ${H_struct.SENDER_ID} NOT IN (?)
+                )`;
 
-        queryResolve(statement, [timestamp, app, adminID, subAdmins])
+        queryResolve(statement, [timestamp, app, adminID,subAdmins])
             .then(result => resolve(result))
             .catch(error => reject(error));
     });
@@ -529,11 +529,11 @@ DB.clearAuthorisedAppData = function (snID, app, adminID, subAdmins, timestamp) 
 
 DB.clearUnauthorisedAppData = function (snID, authorisedAppList, timestamp) {
     return new Promise((resolve, reject) => {
-        let statement = "DELETE FROM _" + snID +
-            " WHERE " + H_struct.TIME + " < ? AND " + //data before deleteDelay (ie, 7 days ago)
-            H_struct.APPLICATION + " NOT IN (?) "; //app not authorised
+        let statement = `DELETE FROM _${snID} 
+                          WHERE ${H_struct.TIME} < ?  
+                          AND ${H_struct.APPLICATION} NOT IN (?) ` ; //app not authorised
 
-        queryResolve(statement, [timestamp, authorisedAppList])
+        queryResolve(statement, [timestamp,authorisedAppList])
             .then(result => resolve(result))
             .catch(error => reject(error));
     });
