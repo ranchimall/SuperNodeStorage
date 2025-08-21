@@ -3,17 +3,14 @@
 function K_Bucket(masterID, nodeList) {
 
     const decodeID = function (floID) {
-        if (floID.startsWith("0x") || floID.length === '40')
-            floID = proxyID(floID);
-        let k = bitjs.Base58.decode(floID);
-        k.shift();
-        k.splice(-4, 4);
-        const decodedId = Crypto.util.bytesToHex(k);
-        const nodeIdBigInt = new BigInteger(decodedId, 16);
-        const nodeIdBytes = nodeIdBigInt.toByteArrayUnsigned();
-        const nodeIdNewInt8Array = new Uint8Array(nodeIdBytes);
-        return nodeIdNewInt8Array;
+        if (floID.startsWith("0x") || floID.length === 40)
+            floID = proxyID(floID);           
+        const bytes = bitjs.Base58.decode(floID);
+        bytes.shift();        
+        bytes.splice(-4, 4);  
+        return new Uint8Array(bytes); 
     };
+
 
     const _KB = new BuildKBucket({
         localNodeId: decodeID(masterID)
@@ -22,9 +19,12 @@ function K_Bucket(masterID, nodeList) {
         id: decodeID(id),
         floID: id
     }));
-    const _CO = nodeList.map(sn => [_KB.distance(decodeID(masterID), decodeID(sn)), sn])
+    const localId = _KB.localNodeId;
+    const _CO = nodeList
+        .map(sn => [_KB.distance(localId, decodeID(sn)), sn])
         .sort((a, b) => a[0] - b[0])
         .map(a => a[1]);
+
 
     const self = this;
 
